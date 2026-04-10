@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Configurações{% endblock %}
+{% block page_title %}⚙️ Configurações{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Alterar Senha -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom">
+        <strong><i class="bi bi-shield-lock me-2 text-primary"></i>Alterar Senha</strong>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="change_password" />
+          <div class="mb-3">
+            <label class="form-label">Senha Atual</label>
+            <div class="input-group">
+              <input type="password" name="current_password" id="curPw" class="form-control" required />
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('curPw', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nova Senha</label>
+            <div class="input-group">
+              <input type="password" name="new_password" id="newPw" class="form-control" minlength="6" required />
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('newPw', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="form-text">Mínimo de 6 caracteres.</div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Confirmar Nova Senha</label>
+            <div class="input-group">
+              <input type="password" name="confirm_password" id="confPw" class="form-control" minlength="6" required />
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confPw', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-copa w-100">
+            <i class="bi bi-lock-fill me-2"></i>Alterar Senha
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alterar E-mail e Dados do Perfil -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-bottom">
+        <strong><i class="bi bi-envelope me-2 text-success"></i>Alterar E-mail</strong>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="change_email" />
+          <div class="mb-4">
+            <label class="form-label">Novo E-mail</label>
+            <input type="email" name="email" class="form-control"
+                   value="{{ current_user.email }}" required />
+          </div>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-envelope-check me-2"></i>Atualizar E-mail
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dados do Perfil (somente leitura) -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom">
+        <strong><i class="bi bi-person-circle me-2"></i>Meu Perfil</strong>
+      </div>
+      <div class="card-body">
+        <div class="profile-info-row">
+          <i class="bi bi-person text-muted"></i>
+          <div>
+            <small class="text-muted">Usuário</small>
+            <div class="fw-semibold">{{ current_user.username }}</div>
+          </div>
+        </div>
+        <div class="profile-info-row">
+          <i class="bi bi-envelope text-muted"></i>
+          <div>
+            <small class="text-muted">E-mail</small>
+            <div class="fw-semibold">{{ current_user.email }}</div>
+          </div>
+        </div>
+        <div class="profile-info-row">
+          <i class="bi bi-calendar-check text-muted"></i>
+          <div>
+            <small class="text-muted">Membro desde</small>
+            <div class="fw-semibold">{{ current_user.created_at | fdt }}</div>
+          </div>
+        </div>
+        <div class="profile-info-row">
+          <i class="bi bi-shield-check text-muted"></i>
+          <div>
+            <small class="text-muted">Perfil</small>
+            <div>
+              <span class="badge bg-{{ 'warning text-dark' if current_user.role == 'admin' else 'secondary' }}">
+                {{ 'Administrador' if current_user.role == 'admin' else 'Participante' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

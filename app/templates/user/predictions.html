@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Meus Palpites{% endblock %}
+{% block page_title %}⚽ Meus Palpites{% endblock %}
+
+{% block content %}
+<div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-2" role="alert">
+  <i class="bi bi-info-circle-fill fs-5"></i>
+  <div>
+    <strong>Atenção:</strong> Os palpites são travados automaticamente <strong>5 minutos antes</strong> do início de cada partida.
+    Placares 10🟢 | 7🔵 | 5🟣 | 2🟡 | 0🔴
+  </div>
+</div>
+
+{% for stage in ordered_stages %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header stage-header">
+    <i class="bi bi-shield-fill-check me-2"></i>{{ stage }}
+    <span class="badge bg-light text-dark ms-2">{{ grouped[stage] | length }} jogos</span>
+  </div>
+  <div class="card-body p-0">
+    {% for item in grouped[stage] %}
+    {% set m = item.match %}
+    {% set pred = item.prediction %}
+    {% set locked = m.is_locked or m.status == 'finished' %}
+
+    <div class="prediction-row {{ 'pred-finished' if m.status == 'finished' }} {{ 'pred-locked' if locked and m.status != 'finished' }}">
+      <div class="pred-match-info">
+        <div class="pred-teams">
+          <span class="team-text">{{ m.flag_home }} <strong>{{ m.home_team }}</strong></span>
+          <span class="mx-2 text-muted fw-bold">×</span>
+          <span class="team-text"><strong>{{ m.away_team }}</strong> {{ m.flag_away }}</span>
+        </div>
+        <div class="pred-meta">
+          <span class="badge bg-secondary">{{ m.stage }}</span>
+          <small class="text-muted ms-2">{{ m.match_datetime | fdt }}</small>
+          {% if m.venue %}<small class="text-muted ms-1">— 📍 {{ m.venue }}</small>{% endif %}
+        </div>
+      </div>
+
+      <div class="pred-result-area">
+        {% if m.status == 'finished' %}
+          <!-- Resultado real -->
+          <div class="result-real">
+            <small class="text-muted">Resultado</small>
+            <div class="score-big">{{ m.home_score }} — {{ m.away_score }}</div>
+          </div>
+          <!-- Palpite do usuário -->
+          {% if pred %}
+            <div class="result-pred">
+              <small class="text-muted">Seu Palpite</small>
+              <div class="score-big text-muted">{{ pred.home_score_pred }} — {{ pred.away_score_pred }}</div>
+            </div>
+            <div class="result-points">
+              <span class="badge bg-{{ pred.points_color }} p-2 fs-6">{{ pred.points_earned }} pts</span>
+              <small class="d-block text-muted mt-1">{{ pred.points_label }}</small>
+            </div>
+          {% else %}
+            <div class="text-muted small"><i class="bi bi-dash-circle"></i> Sem palpite</div>
+          {% endif %}
+
+        {% elif locked %}
+          <!-- Jogo travado mas não encerrado -->
+          <div class="locked-badge">
+            <i class="bi bi-lock-fill me-1"></i>Palpite encerrado
+          </div>
+          {% if pred %}
+            <div class="result-pred ms-3">
+              <small class="text-muted">Seu Palpite</small>
+              <div class="score-big text-primary">{{ pred.home_score_pred }} — {{ pred.away_score_pred }}</div>
+            </div>
+          {% endif %}
+
+        {% else %}
+          <!-- Palpite aberto -->
+          <form method="POST" action="{{ url_for('user.save_prediction', match_id=m.id) }}"
+                class="pred-form" id="form-{{ m.id }}">
+            <div class="score-input-group">
+              <input type="number" name="home_score" class="score-input"
+                     min="0" max="99"
+                     value="{{ pred.home_score_pred if pred else 0 }}"
+                     required />
+              <span class="score-sep">×</span>
+              <input type="number" name="away_score" class="score-input"
+                     min="0" max="99"
+                     value="{{ pred.away_score_pred if pred else 0 }}"
+                     required />
+            </div>
+            <button type="submit" class="btn btn-copa btn-sm ms-2">
+              <i class="bi bi-{{ 'arrow-repeat' if pred else 'check-lg' }}"></i>
+              {{ 'Atualizar' if pred else 'Salvar' }}
+            </button>
+          </form>
+          {% if pred %}
+            <small class="text-muted ms-2">
+              <i class="bi bi-clock"></i> Salvo em {{ pred.updated_at | fdt }}
+            </small>
+          {% endif %}
+
+          <!-- Countdown para trava -->
+          <div class="lock-countdown ms-3"
+               data-datetime="{{ m.match_datetime.isoformat() }}"
+               data-formid="form-{{ m.id }}">
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
+  Nenhuma partida cadastrada ainda. Aguarde o administrador.
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mini-countdown por jogo (trava automática)
+document.querySelectorAll('.lock-countdown').forEach(el => {
+  const target = new Date(el.dataset.datetime + 'Z');
+  const lockTime = target - 5 * 60 * 1000; // 5 min antes
+  const formId = el.dataset.formid;
+
+  function tick() {
+    const now = new Date();
+    const diff = lockTime - now;
+
+    if (diff <= 0) {
+      // Travar o form
+      const form = document.getElementById(formId);
+      if (form) {
+        form.querySelectorAll('input, button').forEach(el => el.disabled = true);
+        form.insertAdjacentHTML('afterend', '<span class="badge bg-danger ms-2"><i class="bi bi-lock-fill me-1"></i>Encerrado</span>');
+        form.remove();
+      }
+      el.innerHTML = '';
+      return;
+    }
+
+    const m = Math.floor(diff / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    if (diff < 10 * 60 * 1000) { // mostra só nos últimos 10 min
+      el.innerHTML = `<small class="text-warning"><i class="bi bi-hourglass-split me-1"></i>Fecha em ${m}m ${String(s).padStart(2,'0')}s</small>`;
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+});
+</script>
+{% endblock %}

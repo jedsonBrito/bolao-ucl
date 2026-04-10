@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Extrato de Pontos{% endblock %}
+{% block page_title %}📝 Extrato de Pontos{% endblock %}
+
+{% block content %}
+<!-- Resumo -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-green">
+      <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+      <div class="stat-value">{{ total_points }}</div>
+      <div class="stat-label">Total de Pontos</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-blue">
+      <div class="stat-icon"><i class="bi bi-pencil-square"></i></div>
+      <div class="stat-value">{{ predictions | length }}</div>
+      <div class="stat-label">Palpites Feitos</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-gold">
+      <div class="stat-icon"><i class="bi bi-check2-all"></i></div>
+      <div class="stat-value">{{ done }}</div>
+      <div class="stat-label">Jogos Apurados</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-red">
+      <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-value">{{ pending }}</div>
+      <div class="stat-label">Aguardando</div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+    <strong><i class="bi bi-receipt me-2"></i>Histórico Detalhado</strong>
+    <small class="text-muted">{{ predictions | length }} palpites</small>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Partida</th>
+            <th>Fase</th>
+            <th class="text-center">Data Jogo</th>
+            <th class="text-center">Resultado Real</th>
+            <th class="text-center">Seu Palpite</th>
+            <th class="text-center">Pontos</th>
+            <th class="text-center d-none d-md-table-cell">Tipo</th>
+            <th class="text-center d-none d-lg-table-cell">Salvo em</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in predictions %}
+          <tr>
+            <td>
+              <span class="fw-semibold">
+                {{ p.match.flag_home }} {{ p.match.home_team }}
+                <span class="text-muted">×</span>
+                {{ p.match.flag_away }} {{ p.match.away_team }}
+              </span>
+            </td>
+            <td><span class="badge bg-secondary">{{ p.match.stage }}</span></td>
+            <td class="text-center text-muted small">{{ p.match.match_datetime | fdt }}</td>
+            <td class="text-center fw-semibold">
+              {% if p.match.status == 'finished' %}
+                {{ p.match.home_score }} — {{ p.match.away_score }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-center">{{ p.home_score_pred }} — {{ p.away_score_pred }}</td>
+            <td class="text-center">
+              {% if p.points_earned is not none %}
+                <span class="badge bg-{{ p.points_color }} fs-6 p-2">{{ p.points_earned }}</span>
+              {% else %}
+                <span class="badge bg-secondary">—</span>
+              {% endif %}
+            </td>
+            <td class="text-center d-none d-md-table-cell">
+              <small class="text-{{ p.points_color if p.points_earned is not none else 'muted' }}">
+                {{ p.points_label }}
+              </small>
+            </td>
+            <td class="text-center text-muted small d-none d-lg-table-cell">
+              {{ p.updated_at | fdt_full }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              Você ainda não fez nenhum palpite.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        {% if predictions %}
+        <tfoot class="table-light">
+          <tr>
+            <td colspan="5" class="text-end fw-semibold">Total de Pontos:</td>
+            <td class="text-center fw-bold text-success fs-5">{{ total_points }}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block page_title %}🏠 Meu Dashboard{% endblock %}
+
+{% block content %}
+<!-- Cards de posição -->
+<div class="row g-4 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card stat-gold">
+      <div class="stat-icon">🏅</div>
+      <div class="stat-value">{{ user_pos.position if user_pos else '—' }}º</div>
+      <div class="stat-label">Sua Posição</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card stat-green">
+      <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+      <div class="stat-value">{{ user_pos.total_points if user_pos else 0 }}</div>
+      <div class="stat-label">Pontos</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card stat-blue">
+      <div class="stat-icon"><i class="bi bi-pencil-square"></i></div>
+      <div class="stat-value">{{ user_pos.total_preds if user_pos else 0 }}</div>
+      <div class="stat-label">Palpites</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card stat-red">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-value">{{ user_pos.exact if user_pos else 0 }}</div>
+      <div class="stat-label">Placares Exatos</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Próximo jogo -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-bottom">
+        <strong><i class="bi bi-calendar-event me-2 text-primary"></i>Próxima Partida</strong>
+      </div>
+      <div class="card-body">
+        {% if next_match %}
+          <div class="match-card-big">
+            <div class="stage-badge">{{ next_match.stage }}</div>
+            <div class="teams-row">
+              <div class="team-col">
+                <div class="team-flag">{{ next_match.flag_home }}</div>
+                <div class="team-name">{{ next_match.home_team }}</div>
+              </div>
+              <div class="vs-col">
+                <div class="vs-text">VS</div>
+                <div class="match-time text-muted small">{{ next_match.match_datetime | fdt }}</div>
+                {% if next_match.venue %}<div class="text-muted" style="font-size:0.75rem;">📍 {{ next_match.venue }}</div>{% endif %}
+              </div>
+              <div class="team-col">
+                <div class="team-flag">{{ next_match.flag_away }}</div>
+                <div class="team-name">{{ next_match.away_team }}</div>
+              </div>
+            </div>
+
+            <!-- Countdown -->
+            <div id="countdown" class="countdown-wrap" data-datetime="{{ next_match.match_datetime.isoformat() }}"></div>
+
+            <!-- Palpite atual -->
+            {% if next_pred %}
+              <div class="my-pred-box">
+                <small class="text-muted">Seu palpite:</small>
+                <span class="pred-score">{{ next_pred.home_score_pred }} × {{ next_pred.away_score_pred }}</span>
+              </div>
+            {% else %}
+              <div class="my-pred-box text-warning">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                <small>Você ainda não fez seu palpite!</small>
+              </div>
+            {% endif %}
+
+            {% if not next_match.is_locked %}
+              <a href="{{ url_for('user.predictions') }}" class="btn btn-copa mt-3">
+                <i class="bi bi-pencil me-1"></i>
+                {{ 'Alterar Palpite' if next_pred else 'Fazer Palpite' }}
+              </a>
+            {% else %}
+              <span class="badge bg-danger mt-3 p-2">Palpites encerrados</span>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+            Nenhuma partida agendada no momento.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini-ranking top 5 -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+        <strong><i class="bi bi-trophy-fill me-2 text-warning"></i>Top Classificação</strong>
+        <a href="{{ url_for('user.ranking') }}" class="btn btn-sm btn-outline-secondary">Ver completo</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          {% for r in ranking[:5] %}
+          <div class="list-group-item px-4 py-2 d-flex align-items-center gap-3
+            {{ 'bg-gold-light' if r.user.id == current_user.id }}">
+            <div class="rank-badge
+              {% if r.position == 1 %}rank-gold
+              {% elif r.position == 2 %}rank-silver
+              {% elif r.position == 3 %}rank-bronze
+              {% else %}rank-normal{% endif %}">
+              {{ r.position }}
+            </div>
+            <div class="mini-avatar {{ 'avatar-me' if r.user.id == current_user.id }}">
+              {{ r.user.username[0].upper() }}
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">
+                {{ r.user.username }}
+                {% if r.user.id == current_user.id %}
+                  <span class="badge bg-primary ms-1" style="font-size:0.65rem;">Você</span>
+                {% endif %}
+              </div>
+              <small class="text-muted">{{ r.total_preds }} palpites</small>
+            </div>
+            <div class="fw-bold text-success fs-5">{{ r.total_points }}</div>
+          </div>
+          {% else %}
+          <div class="p-4 text-center text-muted">Ainda não há dados.</div>
+          {% endfor %}
+
+          {% if user_pos and user_pos.position > 5 %}
+          <div class="list-group-item px-4 py-2 d-flex align-items-center gap-3 bg-gold-light">
+            <div class="rank-badge rank-normal">{{ user_pos.position }}</div>
+            <div class="mini-avatar avatar-me">{{ current_user.username[0].upper() }}</div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ current_user.username }} <span class="badge bg-primary ms-1" style="font-size:0.65rem;">Você</span></div>
+            </div>
+            <div class="fw-bold text-success fs-5">{{ user_pos.total_points }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Últimos resultados -->
+{% if recent_preds %}
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-header bg-transparent border-bottom">
+    <strong><i class="bi bi-clock-history me-2 text-info"></i>Últimos Resultados</strong>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Partida</th>
+            <th>Resultado Real</th>
+            <th>Seu Palpite</th>
+            <th>Pontos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in recent_preds %}
+          <tr>
+            <td>
+              <span class="fw-semibold">{{ p.match.flag_home }} {{ p.match.home_team }}</span>
+              <span class="text-muted mx-1">×</span>
+              <span class="fw-semibold">{{ p.match.flag_away }} {{ p.match.away_team }}</span>
+              <br><small class="text-muted">{{ p.match.match_datetime | fdt }}</small>
+            </td>
+            <td class="fw-semibold">{{ p.match.home_score }} × {{ p.match.away_score }}</td>
+            <td>{{ p.home_score_pred }} × {{ p.away_score_pred }}</td>
+            <td>
+              <span class="badge bg-{{ p.points_color }} fs-6">{{ p.points_earned }} pts</span>
+              <br><small class="text-muted">{{ p.points_label }}</small>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Countdown para próximo jogo
+const cdEl = document.getElementById('countdown');
+if (cdEl) {
+  const target = new Date(cdEl.dataset.datetime + 'Z');
+  function updateCountdown() {
+    const diff = target - new Date();
+    if (diff <= 0) {
+      cdEl.innerHTML = '<span class="badge bg-danger p-2">⚽ Jogo em andamento / encerrado</span>';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    cdEl.innerHTML = `<div class="countdown-timer">
+      <div class="cd-unit"><span>${d}</span><small>dias</small></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><span>${String(h).padStart(2,'0')}</span><small>horas</small></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><span>${String(m).padStart(2,'0')}</span><small>min</small></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><span>${String(s).padStart(2,'0')}</span><small>seg</small></div>
+    </div>`;
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+}
+</script>
+{% endblock %}

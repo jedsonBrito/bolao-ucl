@@ -1,0 +1,604 @@
+/* =========================================================
+   BOLÃO DA COPA 2026 — Estilos Globais
+   ========================================================= */
+
+:root {
+  --sidebar-w: 240px;
+  --sidebar-bg: #0d1117;
+  --sidebar-border: #21262d;
+  --copa-green: #00a651;
+  --copa-gold: #f0c020;
+  --copa-dark: #1a1a2e;
+  --topbar-h: 60px;
+  --content-bg: #f4f6f9;
+  --card-radius: 12px;
+  --transition: 0.25s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--content-bg);
+  color: #212529;
+  overflow-x: hidden;
+}
+
+/* ─── SIDEBAR ───────────────────────────────────────────── */
+
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform var(--transition);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.trophy { font-size: 1.6rem; }
+
+.brand-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--copa-gold);
+  letter-spacing: 0.5px;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--copa-green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  color: #8b949e;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background var(--transition), color var(--transition);
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: #e6edf3;
+}
+
+.nav-item.active {
+  background: rgba(0, 166, 81, 0.15);
+  color: var(--copa-green);
+  border-left-color: var(--copa-green);
+  font-weight: 600;
+}
+
+.nav-item i { font-size: 1.1rem; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 12px 0;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+/* ─── MAIN CONTENT ──────────────────────────────────────── */
+
+.main-content {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin var(--transition);
+}
+
+.topbar {
+  height: var(--topbar-h);
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-title {
+  font-size: 1rem;
+  color: #374151;
+}
+
+.sidebar-toggle {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.sidebar-toggle:hover { background: #f3f4f6; }
+
+.content-body {
+  flex: 1;
+  padding: 24px;
+}
+
+/* ─── AUTH / LOGIN ──────────────────────────────────────── */
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d1117 0%, #1a2744 50%, #003d1f 100%);
+  padding: 20px;
+}
+
+.auth-alerts { width: 100%; max-width: 420px; margin-bottom: 16px; }
+
+.login-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.login-header { text-align: center; margin-bottom: 28px; }
+.login-trophy { font-size: 3.5rem; }
+.login-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin-top: 8px; }
+.login-subtitle { color: #6b7280; font-size: 0.9rem; margin-top: 4px; }
+.login-footer { text-align: center; margin-top: 20px; }
+
+.btn-copa {
+  background: var(--copa-green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background var(--transition), transform 0.1s;
+}
+
+.btn-copa:hover { background: #008a44; color: #fff; }
+.btn-copa:active { transform: scale(0.98); }
+
+/* ─── STAT CARDS ────────────────────────────────────────── */
+
+.stat-card {
+  border-radius: var(--card-radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  min-height: 120px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform var(--transition);
+}
+
+.stat-card:hover { transform: translateY(-3px); }
+
+.stat-green  { background: linear-gradient(135deg, #00a651, #007a3d); }
+.stat-blue   { background: linear-gradient(135deg, #2563eb, #1e40af); }
+.stat-gold   { background: linear-gradient(135deg, #d97706, #92400e); }
+.stat-red    { background: linear-gradient(135deg, #dc2626, #991b1b); }
+
+.stat-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.stat-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 0.8rem; opacity: 0.85; margin-top: 4px; }
+
+/* ─── AVATARS ────────────────────────────────────────────── */
+
+.mini-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #6b7280;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-me { background: var(--copa-green); }
+
+/* ─── RANKING BADGES ─────────────────────────────────────── */
+
+.rank-badge {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.rank-gold   { background: #fbbf24; color: #78350f; }
+.rank-silver { background: #9ca3af; color: #fff; }
+.rank-bronze { background: #d97706; color: #fff; }
+.rank-normal { background: #e5e7eb; color: #374151; }
+
+.bg-gold-light { background: rgba(251, 191, 36, 0.08) !important; }
+
+/* ─── SCORE BADGE (admin matches table) ─────────────────── */
+
+.score-badge {
+  background: #1e40af;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ─── MATCH CARD BIG (dashboard) ────────────────────────── */
+
+.match-card-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.stage-badge {
+  background: var(--copa-green);
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.teams-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.team-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.team-flag { font-size: 2.8rem; }
+.team-name { font-weight: 700; font-size: 1rem; text-align: center; }
+
+.vs-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.vs-text {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #374151;
+}
+
+.my-pred-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f4f6f9;
+  border-radius: 10px;
+  padding: 10px 20px;
+}
+
+.pred-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--copa-green);
+}
+
+/* ─── COUNTDOWN ──────────────────────────────────────────── */
+
+.countdown-wrap { text-align: center; }
+
+.countdown-timer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 52px;
+}
+
+.cd-unit span { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.cd-unit small { font-size: 0.65rem; opacity: 0.7; margin-top: 2px; }
+.cd-sep { font-size: 1.4rem; font-weight: 900; color: #374151; }
+
+/* ─── PREDICTIONS LIST ───────────────────────────────────── */
+
+.stage-header {
+  background: linear-gradient(90deg, #0d1117, #1a2744);
+  color: #e6edf3;
+  font-weight: 600;
+  padding: 12px 20px;
+}
+
+.prediction-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+  transition: background var(--transition);
+}
+
+.prediction-row:last-child { border-bottom: none; }
+.prediction-row:hover { background: #f9fbff; }
+
+.pred-finished { background: #f9f9f9; }
+.pred-locked   { opacity: 0.85; }
+
+.pred-match-info { flex: 1; min-width: 200px; }
+
+.pred-teams {
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.team-text { white-space: nowrap; }
+.pred-meta { font-size: 0.8rem; }
+
+.pred-result-area {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.result-real, .result-pred {
+  text-align: center;
+}
+
+.score-big {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.result-points { text-align: center; }
+
+.locked-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Palpite input */
+.pred-form { display: flex; align-items: center; gap: 6px; }
+
+.score-input-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 4px 8px;
+  transition: border-color var(--transition);
+}
+
+.score-input-group:focus-within { border-color: var(--copa-green); }
+
+.score-input {
+  width: 50px;
+  text-align: center;
+  border: none;
+  outline: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  background: transparent;
+  -moz-appearance: textfield;
+}
+
+.score-input::-webkit-inner-spin-button,
+.score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.score-sep {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+/* ─── PÓDIO ──────────────────────────────────────────────── */
+
+.podium-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 20px 0 0;
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.podium-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #6b7280;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid transparent;
+}
+
+.av-gold { background: var(--copa-green); border-color: var(--copa-gold); }
+.crown { font-size: 1.5rem; }
+
+.podium-name { font-weight: 600; font-size: 0.9rem; text-align: center; max-width: 100px; }
+.podium-pts  { font-size: 0.85rem; color: #6b7280; }
+
+.podium-bar {
+  width: 80px;
+  border-radius: 6px 6px 0 0;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 6px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.bar-gold   { height: 80px; background: linear-gradient(180deg, #fbbf24, #d97706); }
+.bar-silver { height: 60px; background: linear-gradient(180deg, #9ca3af, #6b7280); }
+.bar-bronze { height: 45px; background: linear-gradient(180deg, #d97706, #92400e); }
+
+.podium-1 { order: 2; }
+.podium-2 { order: 1; }
+.podium-3 { order: 3; }
+
+/* ─── POINTS RULES ───────────────────────────────────────── */
+
+.points-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  border-left: 4px solid;
+}
+
+.rule-pts {
+  font-size: 1.2rem;
+  font-weight: 800;
+  white-space: nowrap;
+  min-width: 52px;
+}
+
+.rule-10 { border-color: #22c55e; background: #f0fdf4; }
+.rule-10 .rule-pts { color: #22c55e; }
+.rule-7  { border-color: #06b6d4; background: #ecfeff; }
+.rule-7  .rule-pts { color: #06b6d4; }
+.rule-5  { border-color: #3b82f6; background: #eff6ff; }
+.rule-5  .rule-pts { color: #3b82f6; }
+.rule-2  { border-color: #f59e0b; background: #fffbeb; }
+.rule-2  .rule-pts { color: #f59e0b; }
+.rule-0  { border-color: #ef4444; background: #fef2f2; }
+.rule-0  .rule-pts { color: #ef4444; }
+
+/* ─── PROFILE INFO ───────────────────────────────────────── */
+
+.profile-info-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-info-row:last-child { border-bottom: none; }
+.profile-info-row i { font-size: 1.2rem; width: 20px; flex-shrink: 0; }
+
+/* ─── SIDEBAR COLLAPSED ──────────────────────────────────── */
+
+body.sidebar-collapsed .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
+body.sidebar-collapsed .main-content { margin-left: 0; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(calc(-1 * var(--sidebar-w)));
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+  }
+  .content-body { padding: 16px; }
+  .teams-row { gap: 10px; }
+  .team-flag { font-size: 2rem; }
+}
+
+/* ─── FLAG ICONS ─────────────────────────────────────────── */
+
+/* Tamanho e proporção padrão para bandeiras */
+.fi {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  flex-shrink: 0;
+}
+
+/* Bandeira dentro do card grande do dashboard */
+.team-flag .fi {
+  font-size: 3rem;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+/* Placeholder para times ainda não definidos (fases eliminatórias) */
+.federation-placeholder {
+  font-size: 1.2em;
+  vertical-align: middle;
+  opacity: 0.6;
+}
+
+/* ─── UTILITIES ──────────────────────────────────────────── */
+
+.text-copa { color: var(--copa-green); }
+.bg-copa   { background: var(--copa-green); }

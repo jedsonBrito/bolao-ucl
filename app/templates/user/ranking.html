@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Classificação Geral{% endblock %}
+{% block page_title %}📊 Classificação Geral{% endblock %}
+
+{% block content %}
+<div class="alert alert-secondary border-0 d-flex align-items-center gap-2 small">
+  <i class="bi bi-info-circle"></i>
+  <span><strong>Desempate:</strong> Em caso de empate por pontos, vence quem enviou o primeiro palpite mais cedo (timestamp).</span>
+</div>
+
+<!-- Top 3 Pódio -->
+{% if ranking | length >= 1 %}
+<div class="podium-wrap mb-4">
+  {% if ranking | length >= 2 %}
+  <div class="podium-item podium-2">
+    <div class="podium-avatar">{{ ranking[1].user.username[0].upper() }}</div>
+    <div class="podium-name">{{ ranking[1].user.username }}</div>
+    <div class="podium-pts">{{ ranking[1].total_points }} pts</div>
+    <div class="podium-bar bar-silver"><span>2º</span></div>
+  </div>
+  {% endif %}
+  <div class="podium-item podium-1">
+    <div class="crown">👑</div>
+    <div class="podium-avatar av-gold">{{ ranking[0].user.username[0].upper() }}</div>
+    <div class="podium-name fw-bold">{{ ranking[0].user.username }}</div>
+    <div class="podium-pts fw-bold">{{ ranking[0].total_points }} pts</div>
+    <div class="podium-bar bar-gold"><span>1º</span></div>
+  </div>
+  {% if ranking | length >= 3 %}
+  <div class="podium-item podium-3">
+    <div class="podium-avatar">{{ ranking[2].user.username[0].upper() }}</div>
+    <div class="podium-name">{{ ranking[2].user.username }}</div>
+    <div class="podium-pts">{{ ranking[2].total_points }} pts</div>
+    <div class="podium-bar bar-bronze"><span>3º</span></div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Tabela completa -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th class="text-center" style="width:60px">#</th>
+            <th>Participante</th>
+            <th class="text-center">Pontos</th>
+            <th class="text-center d-none d-md-table-cell">Palpites</th>
+            <th class="text-center d-none d-md-table-cell">🎯 Exatos</th>
+            <th class="text-center d-none d-lg-table-cell">✅ Resultado</th>
+            <th class="text-center d-none d-lg-table-cell">Resultado+Gols</th>
+            <th class="text-center d-none d-lg-table-cell">1 Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in ranking %}
+          <tr class="{{ 'table-warning fw-semibold' if r.user.id == current_user.id }}">
+            <td class="text-center">
+              {% if r.position == 1 %}🥇
+              {% elif r.position == 2 %}🥈
+              {% elif r.position == 3 %}🥉
+              {% else %}
+                <span class="text-muted">{{ r.position }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="mini-avatar {{ 'avatar-me' if r.user.id == current_user.id }}">
+                  {{ r.user.username[0].upper() }}
+                </div>
+                <span>{{ r.user.username }}</span>
+                {% if r.user.id == current_user.id %}
+                  <span class="badge bg-primary" style="font-size:0.65rem;">Você</span>
+                {% endif %}
+                {% if r.user.is_blocked %}
+                  <span class="badge bg-danger" style="font-size:0.65rem;">Bloqueado</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="text-center fw-bold fs-5 text-success">{{ r.total_points }}</td>
+            <td class="text-center d-none d-md-table-cell text-muted">{{ r.total_preds }}</td>
+            <td class="text-center d-none d-md-table-cell">
+              <span class="badge bg-success">{{ r.exact }}</span>
+            </td>
+            <td class="text-center d-none d-lg-table-cell">
+              <span class="badge bg-primary">{{ r.result_only }}</span>
+            </td>
+            <td class="text-center d-none d-lg-table-cell">
+              <span class="badge bg-info text-dark">{{ r.result_plus }}</span>
+            </td>
+            <td class="text-center d-none d-lg-table-cell">
+              <span class="badge bg-warning text-dark">{{ r.one_team }}</span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">Nenhum participante ainda.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Legenda pontuação -->
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-header bg-transparent border-bottom">
+    <strong><i class="bi bi-question-circle me-2"></i>Tabela de Pontuação</strong>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="points-rule rule-10">
+          <div class="rule-pts">10 pts</div>
+          <div>
+            <strong>Placar Exato</strong>
+            <div class="text-muted small">Acertou exatamente os gols dos dois times.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="points-rule rule-7">
+          <div class="rule-pts">7 pts</div>
+          <div>
+            <strong>Resultado + Gols</strong>
+            <div class="text-muted small">Acertou o vencedor e os gols de um time.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="points-rule rule-5">
+          <div class="rule-pts">5 pts</div>
+          <div>
+            <strong>Resultado Seco</strong>
+            <div class="text-muted small">Acertou quem venceu (ou empate), mas errou o placar.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="points-rule rule-2">
+          <div class="rule-pts">2 pts</div>
+          <div>
+            <strong>Gols de um Time</strong>
+            <div class="text-muted small">Errou o resultado, mas acertou os gols de um time.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="points-rule rule-0">
+          <div class="rule-pts">0 pts</div>
+          <div>
+            <strong>Erro Total</strong>
+            <div class="text-muted small">Não acertou nada.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

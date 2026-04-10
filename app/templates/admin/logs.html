@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Logs / Auditoria{% endblock %}
+{% block page_title %}Logs de Auditoria{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold">Filtrar por Usuário</label>
+        <input type="text" name="user" class="form-control form-control-sm"
+               placeholder="Nome do usuário" value="{{ user_filter }}" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold">Filtrar por Ação</label>
+        <select name="action" class="form-select form-select-sm">
+          <option value="">— Todas as Ações —</option>
+          {% for a in all_actions %}
+            <option value="{{ a }}" {{ 'selected' if action_filter == a }}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-funnel me-1"></i>Filtrar
+        </button>
+      </div>
+      <div class="col-md-2">
+        <a href="{{ url_for('admin.logs') }}" class="btn btn-outline-secondary btn-sm w-100">Limpar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+    <strong><i class="bi bi-clipboard2-data me-2"></i>Registros</strong>
+    <small class="text-muted">{{ logs.total }} registros encontrados</small>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Data/Hora</th>
+            <th>Usuário</th>
+            <th>Ação</th>
+            <th>Detalhes</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs.items %}
+          <tr>
+            <td class="text-muted">{{ log.id }}</td>
+            <td class="text-nowrap">{{ log.created_at | fdt_full }}</td>
+            <td>
+              {% if log.user %}
+                <span class="fw-semibold">{{ log.user.username }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge
+                {% if 'DELETE' in log.action %}bg-danger
+                {% elif 'BLOCK' in log.action %}bg-warning text-dark
+                {% elif 'LOGIN' in log.action %}bg-success
+                {% elif 'RESULT' in log.action %}bg-info text-dark
+                {% else %}bg-secondary{% endif %}">
+                {{ log.action }}
+              </span>
+            </td>
+            <td class="text-muted">{{ log.details or '—' }}</td>
+            <td class="text-muted text-nowrap">{{ log.ip_address or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">Nenhum registro encontrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if logs.pages > 1 %}
+  <div class="card-footer bg-transparent">
+    <nav>
+      <ul class="pagination pagination-sm justify-content-center mb-0">
+        {% if logs.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('admin.logs', page=logs.prev_num, user=user_filter, action=action_filter) }}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+        {% endif %}
+        {% for p in logs.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p %}
+            <li class="page-item {{ 'active' if p == logs.page }}">
+              <a class="page-link" href="{{ url_for('admin.logs', page=p, user=user_filter, action=action_filter) }}">{{ p }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+        {% if logs.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('admin.logs', page=logs.next_num, user=user_filter, action=action_filter) }}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

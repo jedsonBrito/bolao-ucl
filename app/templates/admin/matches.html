@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% block title %}Partidas{% endblock %}
+{% block page_title %}Gestão de Partidas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <button class="btn btn-copa" data-bs-toggle="modal" data-bs-target="#modalAddMatch">
+    <i class="bi bi-plus-circle me-1"></i> Cadastrar Partida
+  </button>
+</div>
+
+<!-- Legenda de status -->
+<div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+  <span class="badge bg-primary">Agendada</span><small class="text-muted me-2">— palpites abertos</small>
+  <span class="badge bg-warning text-dark">Em breve</span><small class="text-muted me-2">— palpites encerrados</small>
+  <span class="badge bg-success">Encerrada</span><small class="text-muted me-2">— resultado registrado, bloqueada para edição</small>
+</div>
+
+<!-- Filtro por fase -->
+{% if stages %}
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+  <span class="text-muted small fw-semibold">Filtrar fase:</span>
+  <button class="btn btn-sm btn-outline-secondary stage-filter active" data-stage="all">Todas</button>
+  {% for s in stages %}
+    <button class="btn btn-sm btn-outline-secondary stage-filter" data-stage="{{ s }}">{{ s }}</button>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="matchTable">
+        <thead class="table-dark">
+          <tr>
+            <th>Fase</th>
+            <th>Mandante</th>
+            <th class="text-center">Resultado</th>
+            <th>Visitante</th>
+            <th>Data/Hora</th>
+            <th>Local</th>
+            <th>Status</th>
+            <th class="text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in matches %}
+          <tr data-stage="{{ m.stage }}" class="{{ 'table-light text-muted' if m.status == 'finished' }}">
+            <td><span class="badge bg-secondary">{{ m.stage }}</span></td>
+            <td class="fw-semibold">
+              {{ m.flag_home }} {{ m.home_team }}
+            </td>
+            <td class="text-center">
+              {% if m.status == 'finished' %}
+                <span class="score-badge">{{ m.home_score }} — {{ m.away_score }}</span>
+              {% else %}
+                <span class="text-muted">— × —</span>
+              {% endif %}
+            </td>
+            <td class="fw-semibold">
+              {{ m.away_team }} {{ m.flag_away }}
+            </td>
+            <td class="small">{{ m.match_datetime | fdt }}</td>
+            <td class="small text-muted">{{ m.venue or '—' }}</td>
+            <td>
+              {% if m.status == 'finished' %}
+                <span class="badge bg-success"><i class="bi bi-lock-fill me-1"></i>Encerrada</span>
+              {% elif m.is_locked %}
+                <span class="badge bg-warning text-dark">Em breve</span>
+              {% else %}
+                <span class="badge bg-primary">Agendada</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if m.status == 'finished' %}
+                <!-- Partida finalizada: BLOQUEADA para qualquer ação -->
+                <span class="text-muted small" title="Partida finalizada — edição bloqueada">
+                  <i class="bi bi-lock-fill text-success"></i>
+                </span>
+              {% else %}
+                <div class="btn-group btn-group-sm">
+                  <!-- Editar times / data (fases eliminatórias ou correção) -->
+                  <button class="btn btn-outline-secondary" title="Editar partida"
+                    data-bs-toggle="modal" data-bs-target="#modalEditMatch"
+                    data-mid="{{ m.id }}"
+                    data-home="{{ m.home_team }}"
+                    data-away="{{ m.away_team }}"
+                    data-stage="{{ m.stage }}"
+                    data-venue="{{ m.venue or '' }}"
+                    data-dt="{{ m.match_datetime.strftime('%Y-%m-%dT%H:%M') }}">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <!-- Registrar Resultado -->
+                  <button class="btn btn-outline-success" title="Registrar Resultado"
+                    data-bs-toggle="modal" data-bs-target="#modalResult"
+                    data-mid="{{ m.id }}"
+                    data-home="{{ m.home_team }}"
+                    data-away="{{ m.away_team }}">
+                    <i class="bi bi-check2-square"></i>
+                  </button>
+                  <!-- Excluir -->
+                  <form method="POST" action="{{ url_for('admin.delete_match', match_id=m.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger" title="Excluir"
+                      onclick="return confirm('Excluir partida {{ m.home_team }} x {{ m.away_team }}?')">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">Nenhuma partida cadastrada.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal Adicionar Partida ──────────────────────────────────────────────── -->
+<div class="modal fade" id="modalAddMatch" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('admin.add_match') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Cadastrar Partida</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-6">
+            <label class="form-label">Mandante *</label>
+            <input type="text" name="home_team" class="form-control" required placeholder="Ex: Brasil" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Visitante *</label>
+            <input type="text" name="away_team" class="form-control" required placeholder="Ex: Argentina" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Data e Hora *</label>
+            <input type="datetime-local" name="match_datetime" class="form-control" required />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Fase *</label>
+            <input type="text" name="stage" class="form-control" required placeholder="Ex: Grupo A" list="stageListAdd" />
+            <datalist id="stageListAdd">
+              {% for s in stages %}<option value="{{ s }}">{% endfor %}
+              <option value="Grupo A"><option value="Grupo B"><option value="Grupo C">
+              <option value="Grupo D"><option value="Grupo E"><option value="Grupo F">
+              <option value="Grupo G"><option value="Grupo H">
+              <option value="Oitavas de Final"><option value="Quartas de Final">
+              <option value="Semifinal"><option value="3º Lugar"><option value="Final">
+            </datalist>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Local / Estádio</label>
+            <input type="text" name="venue" class="form-control" placeholder="Ex: MetLife Stadium, Nova York" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-copa">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal Editar Partida (times / data / fase) ──────────────────────────── -->
+<div class="modal fade" id="modalEditMatch" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="formEditMatch" action="">
+        <div class="modal-header bg-warning-subtle">
+          <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Partida</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-12">
+            <div class="alert alert-info py-2 small mb-0">
+              <i class="bi bi-info-circle me-1"></i>
+              Use este formulário para atualizar os times nas <strong>fases eliminatórias</strong>
+              conforme os classificados avançam.
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Mandante</label>
+            <input type="text" name="home_team" id="editHome" class="form-control" placeholder="Nome do time" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Visitante</label>
+            <input type="text" name="away_team" id="editAway" class="form-control" placeholder="Nome do time" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Data e Hora</label>
+            <input type="datetime-local" name="match_datetime" id="editDt" class="form-control" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Fase</label>
+            <input type="text" name="stage" id="editStage" class="form-control" list="stageListEdit" />
+            <datalist id="stageListEdit">
+              {% for s in stages %}<option value="{{ s }}">{% endfor %}
+              <option value="Oitavas de Final"><option value="Quartas de Final">
+              <option value="Semifinal"><option value="3º Lugar"><option value="Final">
+            </datalist>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Local / Estádio</label>
+            <input type="text" name="venue" id="editVenue" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning text-dark fw-semibold">
+            <i class="bi bi-save me-1"></i>Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal Registrar Resultado ───────────────────────────────────────────── -->
+<div class="modal fade" id="modalResult" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form method="POST" id="formResult" action="">
+        <div class="modal-header bg-success-subtle">
+          <h5 class="modal-title"><i class="bi bi-check2-square me-2"></i>Resultado Final</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-center fw-semibold mb-1" id="resultMatchLabel">—</p>
+          <p class="text-center text-danger small mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Após salvar, o resultado <strong>não poderá ser alterado</strong>.
+          </p>
+          <div class="row g-3 text-center">
+            <div class="col-5">
+              <label class="form-label small fw-semibold" id="resultHomeLabel">Casa</label>
+              <input type="number" name="home_score" class="form-control form-control-lg text-center fw-bold"
+                     min="0" max="99" value="0" required />
+            </div>
+            <div class="col-2 d-flex align-items-center justify-content-center">
+              <span class="fs-4 text-muted fw-bold">×</span>
+            </div>
+            <div class="col-5">
+              <label class="form-label small fw-semibold" id="resultAwayLabel">Fora</label>
+              <input type="number" name="away_score" class="form-control form-control-lg text-center fw-bold"
+                     min="0" max="99" value="0" required />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success fw-semibold">
+            <i class="bi bi-lock-fill me-1"></i>Confirmar e Finalizar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Modal resultado
+document.getElementById('modalResult').addEventListener('show.bs.modal', function(e) {
+  const btn = e.relatedTarget;
+  document.getElementById('resultMatchLabel').textContent = btn.dataset.home + ' × ' + btn.dataset.away;
+  document.getElementById('resultHomeLabel').textContent  = btn.dataset.home;
+  document.getElementById('resultAwayLabel').textContent  = btn.dataset.away;
+  document.getElementById('formResult').action = '/admin/matches/result/' + btn.dataset.mid;
+});
+
+// Modal editar partida
+document.getElementById('modalEditMatch').addEventListener('show.bs.modal', function(e) {
+  const btn = e.relatedTarget;
+  document.getElementById('editHome').value  = btn.dataset.home;
+  document.getElementById('editAway').value  = btn.dataset.away;
+  document.getElementById('editStage').value = btn.dataset.stage;
+  document.getElementById('editVenue').value = btn.dataset.venue;
+  document.getElementById('editDt').value    = btn.dataset.dt;
+  document.getElementById('formEditMatch').action = '/admin/matches/edit/' + btn.dataset.mid;
+});
+
+// Filtro por fase
+document.querySelectorAll('.stage-filter').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.stage-filter').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const stage = this.dataset.stage;
+    document.querySelectorAll('#matchTable tbody tr[data-stage]').forEach(row => {
+      row.style.display = (stage === 'all' || row.dataset.stage === stage) ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

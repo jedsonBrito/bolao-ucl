@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}Gestão de Usuários{% endblock %}
+{% block page_title %}Gestão de Usuários{% endblock %}
+
+{% block content %}
+<!-- Botão Novo Usuário -->
+<div class="d-flex justify-content-end mb-3">
+  <button class="btn btn-copa" data-bs-toggle="modal" data-bs-target="#modalAddUser">
+    <i class="bi bi-person-plus-fill me-1"></i> Novo Usuário
+  </button>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Usuário</th>
+            <th>E-mail</th>
+            <th>Cadastro</th>
+            <th>Status</th>
+            <th>Palpites</th>
+            <th>Pontos</th>
+            <th class="text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="text-muted">{{ u.id }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="mini-avatar">{{ u.username[0].upper() }}</div>
+                <span class="fw-semibold">{{ u.username }}</span>
+              </div>
+            </td>
+            <td class="text-muted small">{{ u.email }}</td>
+            <td class="text-muted small">{{ u.created_at | fdt }}</td>
+            <td>
+              {% if u.is_blocked %}
+                <span class="badge bg-danger">Bloqueado</span>
+              {% else %}
+                <span class="badge bg-success">Ativo</span>
+              {% endif %}
+            </td>
+            <td>{{ u.predictions | length }}</td>
+            <td><strong>{{ u.total_points }}</strong></td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm">
+                <!-- Editar -->
+                <button class="btn btn-outline-primary" title="Editar"
+                  data-bs-toggle="modal" data-bs-target="#modalEditUser"
+                  data-uid="{{ u.id }}"
+                  data-username="{{ u.username }}"
+                  data-email="{{ u.email }}">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <!-- Bloquear/Desbloquear -->
+                <form method="POST" action="{{ url_for('admin.toggle_block', user_id=u.id) }}" class="d-inline">
+                  <button type="submit" class="btn btn-outline-{{ 'success' if u.is_blocked else 'warning' }}"
+                    title="{{ 'Desbloquear' if u.is_blocked else 'Bloquear' }}"
+                    onclick="return confirm('{{ 'Desbloquear' if u.is_blocked else 'Bloquear' }} {{ u.username }}?')">
+                    <i class="bi bi-{{ 'unlock' if u.is_blocked else 'lock' }}"></i>
+                  </button>
+                </form>
+                <!-- Excluir -->
+                <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" class="d-inline">
+                  <button type="submit" class="btn btn-outline-danger" title="Excluir"
+                    onclick="return confirm('Excluir permanentemente o usuário {{ u.username }}?')">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">Nenhum participante cadastrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Adicionar Usuário -->
+<div class="modal fade" id="modalAddUser" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('admin.add_user') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Novo Participante</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Usuário *</label>
+            <input type="text" name="username" class="form-control" required placeholder="nome_usuario" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">E-mail *</label>
+            <input type="email" name="email" class="form-control" required placeholder="email@exemplo.com" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Senha *</label>
+            <input type="password" name="password" class="form-control" required placeholder="Mín. 6 caracteres" minlength="6" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-copa">Criar Usuário</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Usuário -->
+<div class="modal fade" id="modalEditUser" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="formEditUser" action="">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar Participante — <span id="editUsername"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Novo E-mail</label>
+            <input type="email" name="email" id="editEmail" class="form-control" placeholder="Deixe em branco para manter" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nova Senha</label>
+            <input type="password" name="password" class="form-control" placeholder="Deixe em branco para manter" minlength="6" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-copa">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('modalEditUser').addEventListener('show.bs.modal', function(e) {
+  const btn = e.relatedTarget;
+  const uid = btn.dataset.uid;
+  const username = btn.dataset.username;
+  const email = btn.dataset.email;
+  document.getElementById('editUsername').textContent = username;
+  document.getElementById('editEmail').value = email;
+  document.getElementById('formEditUser').action = '/admin/users/edit/' + uid;
+});
+</script>
+{% endblock %}

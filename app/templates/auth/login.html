@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block auth_content %}
+<div class="login-card">
+  <div class="login-header">
+    <div class="login-trophy">🏆</div>
+    <h1 class="login-title">Bolão da Copa 2026</h1>
+    <p class="login-subtitle">Entre com sua conta para fazer seus palpites</p>
+  </div>
+
+  <form method="POST" action="{{ url_for('auth.login') }}">
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Usuário</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+        <input type="text" name="username" class="form-control form-control-lg"
+               placeholder="Seu nome de usuário" required autofocus />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Senha</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+        <input type="password" name="password" id="loginPassword" class="form-control form-control-lg"
+               placeholder="Sua senha" required />
+        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('loginPassword', this)">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="remember" id="remember" />
+        <label class="form-check-label" for="remember">Lembrar de mim por 7 dias</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-copa w-100 btn-lg">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+    </button>
+  </form>
+
+  <div class="login-footer">
+    <small class="text-muted">Não tem conta? Solicite ao administrador.</small>
+  </div>
+</div>
+{% endblock %}
