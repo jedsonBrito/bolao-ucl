@@ -63,10 +63,10 @@ def seed():
 
         # ── Participantes de exemplo ──────────────────────────────────────────
         exemplos = [
-            ('pedro',   'pedro@email.com'),
-            ('ana',     'ana@email.com'),
-            ('lucas',   'lucas@email.com'),
-            ('mariana', 'mariana@email.com'),
+            ('vitor',   'vitor@email.com'),
+            ('yago',    'yago@email.com'),
+            ('marcelo', 'marcelo@email.com'),
+            ('adilson', 'adilson@email.com'),
             ('joao',    'joao@email.com'),
         ]
         for username, email in exemplos:
